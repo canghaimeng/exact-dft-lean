@@ -71,9 +71,13 @@ Pinned versions: **Lean 4.34.1** and mathlib
 
 The complete proof and the repackaged public source build successfully with
 the three permitted axioms. Local comparison confirms the official target and
-all 1,999 statement dependencies. Independent alignment and final review passed. Big O Speedrun independently checks
-the pinned submission against its own target and verification rules; its
-submission and receipt links will be recorded here as they become available.
+all 1,999 statement dependencies. Independent alignment and final review passed. **Big O Speedrun: Lean Verified.** The external Lean kernel and permitted-axiom
+audit passed for the submitted source commit
+[`5fea541`](https://github.com/canghaimeng/exact-dft-lean/tree/5fea541a2a3134b656c7bbdb6bf0b759cf78cb5c).
+
+[Official verification receipt](https://github.com/bigospeedrun/verifier/issues/16#issuecomment-6239941339)
+· [Submission and follow-up checks](https://github.com/bigospeedrun/verifier/issues/16)
+· [DFT leaderboard](https://bigospeedrun.com/exact-dft)
 
 ## Source credits
 
