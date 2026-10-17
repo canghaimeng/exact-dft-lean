@@ -1,0 +1,744 @@
+\documentclass[11pt]{amsart}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb,mathtools,booktabs,microtype}
+\usepackage[margin=1in]{geometry}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={An exact Fourier bound with exponent saving 63/50000},pdfauthor={}}
+\ifdefined\pdfinfoomitdate\pdfinfoomitdate=1\fi
+\ifdefined\pdftrailerid\pdftrailerid{}\fi
+\ifdefined\pdfsuppressptexinfo\pdfsuppressptexinfo=15\fi
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+\newcommand{\C}{\mathbb C}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\F}{\mathbb F_2}
+\newcommand{\supp}{\operatorname{supp}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\Span}{\operatorname{span}}
+\newcommand{\wt}{\operatorname{wt}}
+\newcommand{\zetaof}[1]{\zeta_{#1}}
+\setlength{\emergencystretch}{2em}
+\title[An exact Fourier bound]{An exact Fourier bound with exponent saving $63/50000$}
+\date{October 17, 2026}
+\begin{document}
+\begin{abstract}
+An explicit finite tensor construction gives a deterministic exact discrete
+Fourier transform at every positive integer length $n$, with cost
+$O(n(\log n)^{1-63/50000})$. The model permits unrestricted complex
+coefficients and one specified root of polynomial order, and charges scalar
+preparation, schedule construction, indexing and movement. The construction
+uses a 73-axis closure of the public C588AT provider, with arbitrary live
+helpers and separately charged initialized copies. Its exact recursive
+moment contracts at tensor saving $1261/10^6$; strict exponent slack absorbs
+the all-length Fourier transfer loss. This note presents the construction, its exact certificates and its Lean
+formalization at the stated exponent saving.
+\end{abstract}
+\maketitle
+
+\section{Statement, model and provenance}
+For $n\ge1$, let $\zeta_n=\exp(2\pi i/n)$ and
+$F_n=(\zeta_n^{jk})_{0\le j,k<n}$. The model is that of OpenAI's
+all-length exact Fourier theorem~\cite{OpenAIExactDFT2026}. Complex field
+operations have unit cost. Operations on variable data are linear:
+additions, subtractions and multiplication by prepared input-independent
+scalars. Scalar preparation may divide only by proved nonzero quantities.
+Integer operations and random access on a fixed number of
+$O(\log(n+2))$-bit words have unit cost. Preparation, initialization,
+table generation, indexing and movement are included. Coefficients and
+intermediate magnitudes are unrestricted. One explicitly specified root
+of unity is supplied at unit cost; other roots are prepared from it.
+
+\begin{theorem}\label{thm:main}
+Put $\delta=63/50000$. A single deterministic algorithm computes $F_nx$
+exactly for every positive integer $n$ and every $x\in\C^n$, with charged
+cost
+\[
+ O\bigl(n(\log n)^{1-\delta}\bigr)
+ =O\bigl(n(\log n)^{49937/50000}\bigr)\qquad(n\longrightarrow\infty).
+\]
+It needs only the specified root $\zeta_{D_*(n)}$, where $D_*(n)$ is the
+explicit integer in~\eqref{eq:root} and $D_*(n)<1024n^3$.
+Unrolling the dimension-dependent schedule gives exact complex linear
+circuits of the same asymptotic size. In particular, $\delta>0.00125$.
+\end{theorem}
+
+The proof has four interfaces: a rational provider with verified scalar
+and frame identities, a simultaneous tensor program on every live role,
+a charged recurrence allowing separate initialized workspace, and a
+charged transfer to all Fourier lengths. A finite call histogram by
+itself proves none of these interfaces. The complete expanded ordinary
+arguments are retained in the accompanying \texttt{proof.md}; the full
+finite certificate and three standalone exact checkers are also supplied.
+The exposition below follows those arguments without changing their scope.
+
+The all-length reduction and exact-width compiler come from
+OpenAI~\cite{OpenAIExactDFT2026,OpenAIFiniteTensor2026}. The second cited
+paper's nonuniform subsequence result has different quantifiers and is
+not substituted for the all-length theorem. The public complex588
+package and its batching framework are attributed to their source
+contributors~\cite{SheaPackage2026}. The C588AT data, generalized frames
+and compressed closure are taken from the immutable verifier
+package~\cite{VerifierPackage2026}; the proof supplies their actual
+complex-array semantics and physical accounting.
+
+The accepted source comparison is dated October 17, 2026: primary-source
+inspection at 07:34 UTC and completed baseline search at 08:46 UTC.
+Table~\ref{tab:comparison} distinguishes source theorems, reported
+verification and a stronger header. The writer re-fetched the pinned
+primary files when preparing this note; that refresh does not turn the
+dated search into an exhaustive literature claim.
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{p{.31\textwidth}rp{.36\textwidth}}
+\toprule
+Source & Exponent saving & Evidence and scope \\
+\midrule
+OpenAI 130-01~\cite{OpenAIExactDFT2026} & $10^{-13}$ & Charged, uniform, all lengths \\
+Shea/Kothe complex588~\cite{SheaPackage2026} & $2466337/2000000000$ & Pinned goal agrees; platform reports Lean Verified \\
+Withdrawn header~\cite{VerifierPackage2026} & $20099/16000000$ & Author corrected the claim; see the public-record update \\
+Construction here & $63/50000$ & Lean theorem: \texttt{Race.bound} \\
+\bottomrule
+\end{tabular}
+\caption{Dated comparison in the exact complex, all-length model. Larger
+saving is stronger. Platform labels are attributed reports, not a new
+kernel check by this work.}\label{tab:comparison}
+\end{table}
+
+\section{Explicit subspace frames}
+Write $\alpha_0=(1+i)/2$, $\beta_0=(1-i)/2$ and
+\[
+ C=\begin{pmatrix}\alpha_0&\beta_0\\\beta_0&\alpha_0\end{pmatrix},
+ \qquad C^2=X=\begin{pmatrix}0&1\\1&0\end{pmatrix},\qquad C^{-1}=XC.
+\]
+For $V=\F^d$, put $D(x)=i^{|x|}$, where $|x|$ is Hamming weight.
+Let $P_S$ apply $C$ on the binary coordinates in $S$ and identity
+elsewhere. For an invertible binary coordinate map $G$, define
+\[
+ K_G(x,y)=\mathbf1_{Gx=y}\frac{D(x)}{D(y)},\quad
+ U(G,S)=G^{-1}\F^S,\quad T(G,S)=K_GP_SK_G^{-1}.
+\]
+A frame is a matrix invariant: an array carrying frame $T$ already equals
+$Tz$ for its abstract value $z$. Maintaining this invariant does not
+instruct the algorithm to evaluate a dense $T$ or its inverse.
+
+\begin{lemma}[Charged frame transitions]\label{lem:frames}
+Frames representing the same binary subspace differ by an explicitly
+constructible invertible monomial left adapter over $\Q(i)$. Between
+nested represented subspaces with dimension difference $0<r<d$, either
+direction uses exactly one adapted forward $C^{\otimes r}$ block, besides
+monomial work. Under $f$-column replication and $b$ spectator bits, it is
+one adapted batch of $C^{\otimes rf}$, and all remaining work, preparation
+and storage are $O(2^{df+b})$, with $O(df+b+1)$-bit addresses. Each
+complementary fiber of the batch must be charged separately.
+\end{lemma}
+\begin{proof}
+The identity $D(x+y)=D(x)D(y)(-1)^{x\cdot y}$ gives
+\begin{equation}\label{eq:entry}
+ T(G,S)(x,y)=\mathbf1_{x+y\in U(G,S)}\alpha_0^{|S|}
+ \frac{D(x)}{D(y)}(-1)^{(Gx)\cdot G(x+y)}.
+\end{equation}
+Suppose $U=U(G,S)=U(H,R)$ and put $v_j=G^{-1}e_j$ for $j\in S$.
+Define
+\[
+ p(x)=\sum_{j\in S}\bigl((Gx)_j+(Hx)\cdot Hv_j\bigr)v_j,
+ \qquad Bx=x+p(x).
+\]
+Then $p(x)\in U$ and $(GBx)\cdot Gu=(Hx)\cdot Hu$ for every $u\in U$.
+If $Bx=0$, then $x\in U$ and $Hx$ is orthogonal to all of the coordinate
+space $H(U)=\F^R$, so $x=0$. Hence $B$ is invertible. The monomial
+\[
+ A(x,z)=\mathbf1_{Bx=z}\frac{D(x)}{D(Bx)}
+             (-1)^{(GBx)\cdot Gp(x)}
+\]
+satisfies $T(H,R)=AT(G,S)$ by substitution in~\eqref{eq:entry}.
+
+For nested subspaces choose, by binary elimination, one coordinate map
+$B_0$ representing both with nested coordinate sets $I\subset J$.
+Change representatives using the adapters just constructed, and use
+\[
+ T(B_0,J)=K_{B_0}P_{J\setminus I}K_{B_0}^{-1}T(B_0,I).
+\]
+The reverse move uses $P_{J\setminus I}^{-1}=X_{J\setminus I}P_{J\setminus I}$.
+Thus only one forward block is paid in either direction.
+
+All finite binary tables and phases are generated and charged. Tensoring
+across $f$ columns collects the selected $rf$ bits by a coordinate
+permutation. Enumerate column digits by depth-first traversal of the
+complete radix-$2^d$ prefix tree, carrying the image address and phase
+product. The tree has $O(2^{df+b})$ nodes including spectators; each edge
+costs bounded word work. The same traversal packs selected and unselected
+bits. Two array buffers and a prefix stack give the asserted space and
+address bounds, without an extra factor $f$ per entry.
+\end{proof}
+
+\section{The actual C588AT invocation}
+The supplied certificate \texttt{code/c588at-provider.json} has 241357
+bytes and SHA-256
+\begin{center}\footnotesize\ttfamily
+b52b8e31dd731c7bdc1fa3e556224ffa51c76dc66ca36849ecec8c85733f9624.
+\end{center}
+It is a declarative extraction of the pinned public C588AT data, not an
+assumed source theorem. It contains 112 port vectors and orthobases,
+588 helper entrance labels, eight retained centers, 1082 RREF frames,
+and every rational gate and coefficient~\cite{VerifierPackage2026}.
+
+In an admissible window $V=A\oplus E(\F^9)\oplus D_0$, choose the ordered
+basis with $A$ first and the window next. An RREF label $U$ with pivot
+rows $b_p$ has involution $G_Ux=x+\sum_p x_p(b_p+e_p)$, taking $U$
+to its pivot coordinates. This and the chosen window basis define a
+frame $\Phi(U)$ representing $A\oplus E(U)$. The helper's entrance
+frame is $E_q=\Phi(U_q)$; its full-window frame $F_q$ uses the same
+coordinate map and all window coordinates.
+
+\begin{proposition}\label{prop:provider}
+The certificate realizes both scalar maps
+\[
+ (X,Y,S)\mapsto(X,Y+X,S),\qquad
+ (X,Y,S)\mapsto(X-Y,Y,S)
+\]
+on arbitrary live values. Port $t$ starts in frames
+$\Phi(\Span u_t),\Phi(0)$ and ends in frames
+$\Phi(\F^9),\Phi(u_t^\perp)$. A helper arriving in any frame $Z_q$
+leaves in $F_qE_q^{-1}Z_q$, preserving its scalar value. Both maps
+use eight separately initialized copies and the same recursive profile
+\[
+ (h_1,h_2,h_3,h_4,h_5,h_6,h_8)
+ =(2568,492,280,232,56,56,92).
+\]
+The helper residual ranks $9-\dim U_q$ have multiplicities
+$\{9:360,8:140,7:32,5:8,4:48\}$. The statement holds under every
+column replication, with charged linear remaining work as in
+Lemma~\ref{lem:frames}.
+\end{proposition}
+\begin{proof}
+Each listed gate visits a frame before its scalar additions. The checker
+verifies strict nested visits, equal labels at every addition, all
+orthobases and endpoints, and the entrance-gauged set $G$ of 228 helpers.
+The two rational phase matrices are $A_s,B_s$. Let $C_s$ select the
+eight retained centers and $J_s$ be the listed scatter matrix. With
+$J(X,Y,S)=(X,Y+J_sC_sS,S)$, exact backward covector propagation verifies
+\begin{equation}\label{eq:scalar}
+ M=B_sJA_s=
+ \begin{pmatrix}I&0&0\\I&I&K\\L&0&H\end{pmatrix},\qquad K_{[:,G]}=0.
+\end{equation}
+The untested initial-$Y$ zero blocks follow from the explicitly checked
+triangular gate supports. Every factor of $M$ is invertible; if $Hs=0$,
+then $M(0,-Ks,s)=0$, so $s=0$ and $H$ is invertible. Prepare $K,L,H^{-1}$
+by finite exact rational operations. The corrections
+\[
+ g_1(X,Y,S)=(X,Y-KS,S),\quad
+ g_8(X,Y,S)=(X,Y,H^{-1}(S-LX))
+\]
+give $g_8Mg_1(X,Y,S)=(X,Y+X,S)$. The first correction uses only
+ungauged helpers at the same frame as $Y$; the last mixes only
+full-window $X,S$ arrays, so both are legal pointwise operations.
+
+The scatter cannot directly mix unequal frames. Initialize eight new
+arrays to zero, copy the retained helper values at their center frames,
+move these copies down to the zero label by eight rank-eight blocks,
+and scatter into $Y$. Erase the copies afterward with charged writes.
+No live helper is assumed zero. The phase visits plus these eight
+blocks give precisely the stated profile: phase $A$ has ranks
+$\{1:1028,2:8,4:56\}$, phase $B$ has
+$\{1:1540,2:484,3:280,4:176,5:56,6:56,8:84\}$.
+
+Replace each rational shear $I+ce_te_s^T$ by $I-ce_se_t^T$ in the
+same chronological order, retaining its frame visits. This computes
+the inverse transpose of the scalar product, since
+$(DE)^{-T}=D^{-T}E^{-T}$. The corrections remain legal. Realize
+$J^{-T}$ by copying $J_s^TY$ at zero frame into the extra arrays,
+moving them up to their centers, and adding their negative selected
+values to the helpers. The resulting scalar map is
+$(g_8Mg_1)^{-T}$, namely $(X-Y,Y,S)$, at the same price.
+
+Finally change the helper's full-window representative to $F_q$ by a
+monomial. For arbitrary incoming $Z_qs$, interpret its initial scalar
+as $E_q^{-1}Z_qs$; this is semantic interpretation, not a dense inverse
+operation. Scalar restoration therefore gives $F_qE_q^{-1}Z_qs$.
+The product $F_qE_q^{-1}$ is exactly a monomial-conjugated $P_R$ on
+the nonpivot window coordinates, of rank $9-\dim U_q$.
+
+For orthogonal $G$, the ratio $D(Gx)/D(x)$ is a sign character.
+Consequently $T(G,S)$ differs from the ordinary product of $C$ along
+the orthonormal directions $G^{-1}e_j$ by a monomial: each negative
+factor uses $\alpha_0I-\beta_0X_z=iX_z(\alpha_0I+\beta_0X_z)$.
+Thus the supplied orthobases give the needed boundary representatives.
+All identities tensor across columns. Finite rational corrections,
+copy writes and the adapters of Lemma~\ref{lem:frames} are charged
+linear overhead. The full gate definitions and exhaustive finite
+verification are supplied with the expanded proof.
+\end{proof}
+
+\section{The 73-axis closure on every live array}
+Let $V=H\oplus E_0\oplus\cdots\oplus E_7$, where $H$ has coordinates
+$0,\ldots,8$ and each $E_c$ has eight coordinates. Put $p=0$,
+$H'=H\setminus\{p\}$ and $R_{<k}=\bigcup_{c<k}E_c$.
+Define the finite nonempty class set
+\[
+ \Gamma=\{g\in\F^{73\times73}:g^Tg=I\},\qquad Q=|\Gamma|.
+\]
+Lexicographic enumeration of all binary matrices defines the set and
+all its tables constructively. This enormous finite preparation is
+charged; $Q$ is fixed independently of the eventual input length.
+
+For port $t$, let $B_t$ be its supplied orthobase, $D_t=\diag(B_t,I_{64})$,
+and $\mathcal F_{g,t}(S)=T((gD_t)^{-1},S)$. For each $(g,t)$ use eight
+replicas, each containing four pairs $(X_j,Y_j)$, $1\le j\le4$.
+Initially $X_j$ has frame $\mathcal F(\{p\})$ and $Y_j$ frame $I$.
+These are invariants for arbitrary physical inputs. With 4824 live
+helper banks per class, the live count and separate copy count are
+\begin{equation}\label{eq:stock}
+ W=Q(8\cdot4\cdot2\cdot112+4824)=Q\cdot11992,
+ \qquad\text{initialized copies}=8Q.
+\end{equation}
+Serial movement buffers are additional charged storage.
+
+At stage $k=0,\ldots,8$, invocation class $d$ uses background
+$d\Span R_{<k}$ and window $dH$. Stage zero serves class $g$ with
+$d=g$. For $k\ge1$, let $\Pi_{k-1}$ swap $H'$ with $E_{k-1}$, fixing
+$p$ and other coordinates, and set
+\[
+ R_{t,k}=D_t\Pi_{k-1}D_t^{-1},\qquad d=gR_{t,k}.
+\]
+Each $R_{t,k}$ is an orthogonal involution, so this is a permutation
+of $\Gamma$ for each port. Every data role is used once at its stage.
+In the class basis, $(gD_t)^{-1}d=\Pi_{k-1}D_t^{-1}$. Since
+$D_t^{-1}u_t=e_p$ and $D_t^{-1}(u_t^\perp)=\Span H'$, the stage-$k$
+output frames represent
+\[
+ X[k]=H\cup R_{<k},\qquad Y[k]=H'\cup R_{<k}.
+\]
+For $k\ge1$ the inputs are exactly $X[k-1],Y[k-1]$; at stage zero
+they are $\{p\},\varnothing$. Same-subspace adapters select the common
+$\mathcal F_{g,t}$ representatives. These generator identities hold for
+all $g$ by left multiplication, not by an experimental enumeration.
+
+\subsection{A run on four pairs}
+Run stage zero forward on pair 1, then stage 1 backward on pair 1.
+For $j=2,3,4$ perform the following fixed sequence. Move the idle pair
+$j$ to $X[2j-3],Y[2j-3]$, paying rank $16(j-1)$ on each side; do
+$X_{j-1}\mathrel{+}=X_j$, $Y_j\mathrel{-}=Y_{j-1}$; run stage $2j-2$
+forward on pair $j-1$; move pair $j$ up by rank eight on each side;
+do $Y_j\mathrel{+}=Y_{j-1}$, $X_{j-1}\mathrel{-}=X_j$; and run stage
+$2j-1$ backward on pair $j$. Run stage 8 forward on pair 4.
+Finish pairs 1, 2, 3 at the common endpoints $V,V\setminus\{p\}$ by
+rank 48, 32, 16 moves on each side. Finally, for $j=4,3,2$, do
+$Y_{j-1}\mathrel{-}=Y_j$, $X_j\mathrel{+}=X_{j-1}$.
+Every scalar addition connects equal frames. Before those final gates,
+the scalar values are
+\[
+\begin{array}{c|cc}
+j&X_j&Y_j\\\hline
+1&-y_1&x_1+x_2\\
+2&y_1-y_2&x_2+x_3\\
+3&-y_1+y_2-y_3&x_3+x_4\\
+4&y_1-y_2+y_3-y_4&x_4
+\end{array}
+\]
+so the final gates give $(x_j,y_j)\mapsto(-y_j,x_j)$.
+The extra price per port across the eight replicas is
+\begin{equation}\label{eq:extra}
+ 48\phi(8)+32\phi(16)+32\phi(32)+32\phi(48),
+\end{equation}
+where $\phi(r)$ denotes one rank-$r$ adapted batch.
+
+For the final correction write $\mathcal F(S)=KP_SK^{-1}$ and
+$L_0=\{p\}$. The full-subspace adapter gives a monomial $N$ with
+$N\mathcal F(V)=P_V$. Also
+$\mathcal F(V)\mathcal F(L_0)=J\mathcal F(V\setminus L_0)$,
+where $J=KX_pK^{-1}$ is monomial. Apply $N$ to each $X$, $NJ$ to each
+$Y$, then replace the physical pair $(X,Y)$ by $(Y,-X)$. The outputs
+are $P_V\mathcal F(L_0)x_j,P_Vy_j$, the full tensor applied to the
+original physical inputs. This avoids an initial dense frame inverse.
+
+\subsection{Hosting residuals on arbitrary helper banks}
+Maintain each bank in frame $AP_U$ with $A$ monomial. Suppose its next
+already-paid invocation residual is $C_0P_RC_1$, with $|R|=r$ and
+$|U|+r\le73$. Choose the first $r$ unused coordinates $T$ and a
+coordinate permutation $\sigma$ taking $T$ to $R$. Its address map
+$M_\sigma$ satisfies $P_RM_\sigma=M_\sigma P_T$. Apply the monomial
+$C_1^{-1}M_\sigma A^{-1}$ before the invocation. The bank then has frame
+\begin{equation}\label{eq:bank}
+ (C_0P_RC_1)(C_1^{-1}M_\sigma A^{-1})(AP_U)
+       =(C_0M_\sigma)P_{T\cup U}.
+\end{equation}
+Only monomials are inverted. At the end apply $A^{-1}$ and, if needed,
+one block on the unused coordinates. The bank's arbitrary scalar input
+is preserved throughout, and its final physical map is $P_V$.
+
+Partition the 588 residual slots into the following 67 groups. Within
+each weight use increasing slot order.
+\begin{center}\small
+\begin{tabular}{rrrrrrr}
+\toprule
+Groups & Weight 9 & 8 & 7 & 5 & 4 & Load\\\midrule
+30&6&1&1&0&1&73\\
+18&5&3&0&0&1&73\\
+3&7&0&0&2&0&73\\
+1&6&0&2&1&0&73\\
+7&1&8&0&0&0&73\\
+7&8&0&0&0&0&72\\
+1&0&0&0&1&0&5\\\bottomrule
+\end{tabular}
+\end{center}
+At substage $k=0,\ldots,71$, assign position $j$ of group $a$ to bank
+$72a+((k+j)\bmod72)$. This is injective at a substage, and every bank
+gets every slot of its group once over 72 substages. Positive partial
+loads never exceed final loads. Thus~\eqref{eq:bank} is always legal.
+The final padding multiset is $\{0:4248,1:504,68:72\}$.
+
+\begin{proposition}\label{prop:global}
+For every $f\ge1$ and $0\le b<73$, the construction applies
+$I_{2^b}\otimes C^{\otimes73f}$ to all $W=Q\cdot11992$ arbitrary
+live arrays of length $2^{73f+b}$. Its recursive counts are $Qn_r$,
+where $n_r$ is in Table~\ref{tab:rate}. Besides the $8Q$ initialized
+copies, it uses fixed serial buffers. All nonrecursive work and
+storage are $O((W+S)2^{73f+b})$ for a fixed finite $S$, including table
+generation, copy initialization, scalar corrections, adapters, movement
+and indexing. Addresses have $O(73f+b+1)$ bits.
+\end{proposition}
+\begin{proof}
+There are 72 invocations per class. Their profiles, the data climbs
+in~\eqref{eq:extra}, and the padding give
+$n_1=72\cdot2568+504$, $n_8=72\cdot92+112\cdot48$,
+$n_{16}=n_{32}=n_{48}=112\cdot32$, $n_{68}=72$, and the remaining
+entries $72h_r$. Each rank is below 73; their weighted sum is
+$872856=73\cdot11992-2560$. All data and banks have the full tensor
+as proved above. Multiplying role and call counts by $Q$ retains the
+actual physical construction. Every table has a fixed terminating
+generation algorithm. Column-prefix traversal from
+Lemma~\ref{lem:frames} implements all replicated monomials in linear
+work. Reuse the eight copies per class between substages; initialize
+and erase them with charged writes. Fixed correction and movement
+buffers are separately counted. No live input is replaced by zero.
+\end{proof}
+
+\section{Exact contraction and charged amplification}
+Put $a=1261/10^6$ and $\alpha=1-a$. Table~\ref{tab:rate} supplies both
+the exact call counts and rational logarithm bounds used below.
+\begin{table}[ht]
+\centering\small
+\begin{tabular}{rrr}
+\toprule
+$r$ & $n_r$ & $u_r$ with $\log(73/r)\le u_r/10^9$\\\midrule
+1&185400&4290459442\\
+2&35424&3597312261\\
+3&20160&3191847153\\
+4&16704&2904165081\\
+5&4032&2681021529\\
+6&4032&2498699972\\
+8&12000&2211017900\\
+16&3584&1517870719\\
+32&3584&824723539\\
+48&3584&419258431\\
+68&72&70951736\\\bottomrule
+\end{tabular}
+\caption{Exact profile per orthogonal class and rational rate certificate.}
+\label{tab:rate}
+\end{table}
+For $1\le t\le2$, $z=(t-1)/(t+1)$ satisfies
+\[
+ L(t)=2\sum_{j=0}^{39}\frac{z^{2j+1}}{2j+1}
+ \le\log t\le H(t)=L(t)+\frac{2z^{81}}{81(1-z^2)}.
+\]
+This is the positive integrated geometric series and its tail bound.
+Write $73/r=2^st$ with $1\le t<2$; exact rational arithmetic checks
+$sH(2)+H(t)\le u_r/10^9$. Since $j!\ge2\cdot3^{j-2}$ for $j\ge2$,
+\[
+ e^x\le E(x):=1+x+\frac{x^2}{2(1-x/3)}\quad(0\le x<3).
+\]
+The supplied rate checker verifies the finite rational comparison
+\begin{equation}\label{eq:moment}
+ \Psi=\frac1{11992}\sum_rn_r(r/73)^{1-a}
+ \le\sum_r\frac{rn_r}{73\cdot11992}E(au_r/10^9)
+ <\frac{999989}{10^6}<1.
+\end{equation}
+For the actual program, $(Q\cdot11992)^{-1}\sum_rQn_r(r/73)^\alpha$
+equals $\Psi$ exactly. This cancels a common multiplicity, not physical
+roles or workspace.
+
+For completeness, let $T(k)$ be simultaneous cost on $W$ arbitrary
+arrays and $t(k)=T(k)/(W2^k)$. For $k\ge73$, put $f=\lfloor k/73\rfloor$,
+$b=k-73f$. Apply the $b$ spectator factors directly, then the concrete
+program of Proposition~\ref{prop:global}. A rank-$r$ call has
+$2^{k-rf}$ fibers. Recurse on each complete group of $W$ fibers;
+use the elementary tensor algorithm on the fewer than $W$ leftovers.
+Allocate each child's initialized workspace separately. With
+$N_r=Qn_r$, the charged recurrence is
+\[
+ T(k)\le A_0(W+S)2^k+\sum_rN_r\left[
+ \left\lfloor\frac{2^{k-rf}}W\right\rfloor T(rf)
+ +B_0(W-1)rf\,2^{rf}\right].
+\]
+Because $rf\,2^{rf-k}\le rf2^{-f}\le r$, normalization gives
+$t(k)\le A_1+W^{-1}\sum_rN_rt(r\lfloor k/73\rfloor)$ with fixed
+$A_1$, including scratch and leftovers. For positive $k$, strong
+induction on $k^\alpha$, using $rf\le rk/73$, yields $t(k)\le Kk^\alpha$
+once $K$ covers $1\le k<73$ and $K73^\alpha(1-\Psi)\ge A_1$.
+Dimension zero is identity. This does not use an inequality with
+$rf+1$ in place of $rf$.
+
+For a single input initialize $W-1$ additional arrays and keep its
+output. Thus
+\begin{equation}\label{eq:tensor}
+ C^{\otimes k}\text{ costs }O(2^k(k+1)^{1-a}),\qquad k\ge0.
+\end{equation}
+Serial children have strictly smaller integer dimensions, so their
+array lengths sum along a stack to less than $2^{k+1}$. Memory is
+$O(2^k)$ and addresses have $O(k+1)$ bits. Every child's arbitrary
+input may be a parent's nonzero scratch value; none is presumed zero.
+The incomplete-batch mechanism is also present in the pinned public
+framework~\cite{SheaPackage2026}; the expanded proof states and proves
+the version with separate charged initialized workspace.
+
+\section{Charged transfer to every Fourier length}
+This section records the complete transfer interfaces of the accepted
+proof, following OpenAI's exact-width method~\cite{OpenAIExactDFT2026}.
+Part E of \texttt{proof.md} gives the expanded compiler and address
+proof, including all finite fallbacks. Its tensor hypothesis is now
+supplied by~\eqref{eq:tensor}.
+
+\subsection{A local compiler without extra coordinates}
+For primitive $r$th root $u$, let column $k$ of $P$ be the coefficient
+vector of $\prod_{j<k}(Z-u^j)$. Then $N=F_r(u)P$ is lower triangular.
+With $H_0=1$, $H_j=\prod_{s=1}^j(1-u^s)\ne0$ for $0<j<r$,
+\[
+ N_{ik}=(-1)^ku^{k(k-1)/2}\frac{H_i}{H_{i-k}}\quad(i\ge k).
+\]
+Hence $N$ is diagonal--lower-Toeplitz--diagonal. If $D_N=\diag(N_{kk})$,
+uniqueness of unit-lower/diagonal/unit-upper factorization and symmetry
+of $F_r$ give
+\begin{equation}\label{eq:newton}
+ F_r(u)=ND_N^{-1}N^T.
+\end{equation}
+
+A fixed-vector convolution has a printed bounded-fan-in/fan-out linear
+DAG with $O(v\log(2+v))$ gates and $O(\log(2+v))$ depth, by the binary
+FFT. Such a DAG for $M:\C^e\to\C^b$, using $g$ gate coordinates, can
+be replayed on arbitrary borrowed values to implement
+$(x,y,z)\mapsto(x,y+Mx,z)$. Indeed a forward additive sweep has form
+$z\mapsto Uz+Tx$; if the output reads are $Fz+Dx$, then $FT+D=M$.
+Sweep, add output, and undo; then sweep with all direct $x$ edges
+omitted, subtract its output, and undo. The added $FUz$ terms cancel
+and $z$ is restored. This uses at most $8g+2b$ shears. Edge coloring
+at each depth level gives $O(H+1)$ disjoint-pair layers for bounded
+fan-out. The identity allows borrowed values correlated with all
+other coordinates.
+
+To compile a lower triangular Toeplitz matrix $T_v$ with nonzero
+diagonal $h_0$, prepare its inverse sequence
+$g_0=h_0^{-1}$, $g_k=-h_0^{-1}\sum_{j=1}^kh_jg_{k-j}$.
+For $p=\lfloor v/2\rfloor$, factor
+\[
+ T_v=\begin{pmatrix}I&0\\E&I\end{pmatrix}
+             \diag(T_p,T_{v-p}),\qquad E=BT_p^{-1}.
+\]
+Its entries satisfy $E_{ij}-E_{i-1,j-1}=-h_{i-p}g_{p-j}$ away from
+chunk boundaries. Therefore each $b\times e$ chunk $M$ has displacement
+$M-J_bMJ_e^T$ equal to three explicit outer products, including the
+first row/column corrections. The identity
+$M=\sum_{\ell\ge0}J_b^\ell(M-J_bMJ_e^T)(J_e^T)^\ell$ evaluates a
+chunk with a fixed number of convolutions. Print these graphs and
+choose the largest chunk size for which every graph fits with its
+source and target in the same $v$ coordinates. A size
+$\Theta(v/\log v)$ fits for all sufficiently large $v$; otherwise
+use the finite direct fallback. The $O(\log^2v)$ chunk pairs each
+take $O(\log v)$ replay layers. Balanced child recursion gives
+$O(1+\log^4r)$ layers on exactly $r$ coordinates. All graph printing,
+fit tests, coefficient generation and edge coloring are polynomial
+in $r$, with an absolute degree. Borrowed coordinates are restored
+after each chunk. Equation~\eqref{eq:newton} and transposition preserve
+the layer types.
+
+Every scalar shear can use one common pattern of six forward $C$
+slots. To see this, put $S_0=\diag(1,i)$ and
+$H_2=\left(\begin{smallmatrix}1&1\\1&-1\end{smallmatrix}\right)$.
+Direct multiplication gives $H_2=\alpha_0^{-1}S_0CS_0$ and
+\[
+ H_2\diag(2,1)H_2\diag(-3,1)H_2
+ =K_0=\begin{pmatrix}-8&-10\\0&-6\end{pmatrix}.
+\]
+For $t\ne0$, conjugating $\diag(-1/8,-1/6)K_0$ by
+$D_t=\diag(4t/5,1)$ gives the upper shear of coefficient $t$.
+For an arbitrary prepared $\mu$, set $\kappa=1+\mu\overline\mu$.
+Both $t_1=\kappa$ and $t_2=\mu-\kappa$ are nonzero, since
+$1+|\mu|^2>|\mu|$. Their shears compose to the $\mu$ shear.
+Conjugates are prepared by evaluating the coefficient DAG at inverse
+roots and $-i$, not by conjugating variable data or testing complex
+zeros. This proves the common slot pattern even for zero coefficients.
+All needed extra roots have power-of-two order less than $8r$.
+
+\subsection{Synchronization and linear indexing}
+For widths $r_1,\ldots,r_\ell\ge2$ and $R=\prod_jr_j$, the mixed-radix
+prefix tree has fewer than $2R$ nodes. Tensor monomials are implemented
+by carrying original and permuted address prefixes and a running
+coefficient. The cost is $O(R)$, rather than $O(R\ell)$.
+
+At a simultaneous $C$ slot each local axis splits into ordered pairs
+and singletons. A sector chooses one block on each axis, with sizes
+$q_j\in\{1,2\}$; its map is $C^{\otimes k}$ and width $2^k=\prod_jq_j$.
+If $p_j$ is the number of local coordinates preceding its block and
+$\tau_j=\prod_{i>j}r_i$, its packed start is
+\[
+ S=\sum_{j=1}^{\ell}\left(\prod_{i<j}q_i\right)p_j\tau_j.
+\]
+This classifies earlier sectors by their first different axis.
+During a digit traversal with local coordinate $a_j$ and within-block
+digit $t_j$, update
+\[
+ S\leftarrow S+Q_0p_j\tau_j,\quad Q_0\leftarrow Q_0q_j,\quad
+ o\leftarrow oq_j+t_j,\quad I\leftarrow Ir_j+a_j.
+\]
+The packed address is $S+o$ and the original address $I$. Packing,
+unpacking and sector listing therefore cost $O(R)$ in total. The
+sector widths sum to $R$ and $k\le\ell$;~\eqref{eq:tensor} bounds
+all sector transforms by $O(R(\ell+1)^\alpha)$. Padding local compiler
+words to common length gives
+\begin{equation}\label{eq:sync}
+ O\bigl(R(\ell+1)^\alpha(1+\log r_{\max})^4\bigr)
+       +\operatorname{poly}(\ell,r_{\max},\log(R+2)).
+\end{equation}
+The polynomial is charged preparation with absolute degree. Local
+words are matrix identities on arbitrary states; tensor-product
+composition remains valid when other axes alter their borrowed values.
+
+\subsection{Working lengths, CRT and the sole supplied root}
+Let $r_j$ be the odd primes in order and choose maximal $\ell\ge0$
+with $R=\prod_{j=1}^\ell r_j\le2n$. Choose least $e\ge0$ with
+$L=R2^e\ge2n$. Then $2n\le L<4n$ and $2^e<2r_{\ell+1}$.
+Elementary prime estimates suffice: the central binomial coefficient
+satisfies
+\[
+ \frac{4^u}{2u+1}\le \binom{2u}{u}\le(2u)^{\pi(2u)}.
+\]
+Each prime contributes at most $2u$ to the latter coefficient. With
+$u=(j+1)^2$ this gives $r_j=O((j+1)^2)$. Since $r_j\ge j+2$,
+$\log R=\Theta(\ell\log(\ell+2))$. Maximality implies
+\[
+ \ell=\Theta(\log n/\log\log n),\qquad
+ \log\ell=\Theta(\log\log n),\qquad e=O(\log(\ell+2)).
+\]
+Trial division finds the needed primes with polynomial logarithmic
+work. Initial lengths are handled directly.
+
+For coprime factors $q\mid L$, put $E_q=(L/q)d_q$, where
+$(L/q)d_q\equiv1\pmod q$. The CRT idempotents give
+\[
+ j=\sum_qE_qj_q\pmod L,\qquad
+ \zeta_L^{jk}=\prod_q\zeta_q^{d_qj_qk_q}.
+\]
+Prefix traversal with tabulated residues implements the CRT and local
+output permutations in $O(L)$ work. Apply~\eqref{eq:sync} to odd-prime
+axes, and the elementary binary FFT to the $2^e$ axis. All tables,
+twiddles and compilation are charged, giving
+\[
+ T(F_L)=O\bigl(L[(\ell+1)^\alpha(1+\log(\ell+2))^4+1+e]\bigr)
+                       +\operatorname{poly}(\log(n+2)).
+\]
+The inverse has the same cost since $F_L^2=LJ$, with $J$ negating
+the index. Its only additional division is by the nonzero integer $L$.
+
+For arbitrary $n$, put $\eta=\zeta_{2n}$. The chirp identity
+\[
+ \zeta_n^{jk}=\eta^{j^2}\eta^{-(k-j)^2}\eta^{k^2}
+\]
+reduces $F_nx$ to one cyclic convolution of length $L$. Zero-pad
+$A_j=\eta^{j^2}x_j$ and take the fixed kernel
+$B_u=\eta^{-u^2}$ on residues $-(n-1)\le u\le n-1$, zero elsewhere.
+There is no aliasing because $L\ge2n$. Compute two forward transforms
+and one inverse, charging the full transform of the fixed kernel as
+scalar preparation. Chirps are generated successively in $O(n)$
+operations, and padding and pointwise products are charged.
+
+The sole supplied root has explicitly specified order
+\begin{equation}\label{eq:root}
+ D_*(n)=(2n)L\,2^{\lceil\log_2(16L)\rceil}
+            <64nL^2<1024n^3.
+\end{equation}
+The chirp, CRT, binary-convolution roots and $i$ are powers of this
+root; their extraction and local preparation are polylogarithmic.
+Every scalar denominator is a root power, a nonzero $H_j$, a nonzero
+Toeplitz diagonal, a nonzero integer, $\alpha_0$, or one of the proved
+nonzero shear coefficients. All integer quantities and addresses fit
+a fixed number of logarithmic words. These checks retain the original
+root-supply, coefficient and uniformity conventions.
+
+Substituting the prime estimates gives
+\begin{equation}\label{eq:before-slack}
+ T(F_n)=O\bigl(n(\log n)^{1-a}(\log\log n)^{3+a}\bigr).
+\end{equation}
+For $\delta=63/50000$, $a-\delta=10^{-6}>0$. With
+$t=\log\log n\ge1$, the positive exponential series gives
+$e^{(a-\delta)t}\ge(a-\delta)^4t^4/24$, and $3+a<4$.
+Thus the extra factor in~\eqref{eq:before-slack} is
+$O((\log n)^{a-\delta})$. This proves Theorem~\ref{thm:main}.
+The same program uses a finite direct fallback, with $n=1$ identity;
+all choices depend on dimensions and fixed tables, permitting uniform
+circuit unrolling. No equality $\delta=a$ is asserted.
+
+\section{Comparison, attribution and limits}
+The exact positive differences in Table~\ref{tab:comparison} are
+\[
+ \delta-10^{-13}=\frac{12599999999}{10^{13}},\quad
+ \delta-\frac{2466337}{2000000000}=\frac{53663}{2000000000},\quad
+ \delta-\frac{20099}{16000000}=\frac{61}{16000000}.
+\]
+The strongest verified public bound identified at the recorded cutoff
+was the Shea/Kothe saving $0.0012331685$. The platform's Lean Verified
+description~\cite{BigOSpeedrun2026} is a public report. The pinned goal
+and rate sources agree with that saving; no Lean rebuild is claimed here.
+
+The relevant mixed-package entry header advertises $20099/16000000$,
+but its sole import resolves to \texttt{FourierC588.Main}; the imported
+goal uses $12331685/10^{10}=0.0012331685$, and the seam retains the
+older homogeneous 12208-role invoice. The accepted dated inspection
+also found no concrete mixed seam in the pinned tree. This is a
+closure gap in that entry point, leaving the stronger header unresolved;
+it does not refute another possible mixed construction. The rounded
+platform display $0.00125$ is not an exact substitute. The theorem
+here follows its own fully specified homogeneous construction, not
+that unresolved header or an imported integer-multiplication exponent.
+
+OpenAI supplies the original exact model, compiler, synchronized-sector
+and all-length reductions. The public package credits Jacob Sussman
+for the generalized frames and engine; Dugongue for entrance gauges
+and residual banks; Zhihao Chen (jacklightChen) for the compressed
+layout; DaysSky for the bridged scalar word; Lydakis for bank patterns;
+Nil Mamano for the gauged extension; and Jeremy Kothe and Ryan Shea
+for complex588 integration. Dmitri Arkhipov packaged the pinned mixed
+submission. Its header also retains the antecedent contributions of
+Douglas Colkitt, Rohan Arun and Swapnil Jain. Source credits and license notices are preserved in the accompanying
+Lean repository and its upstream notice files.
+
+The accompanying Lean formalization exports \texttt{Race.bound} at saving
+$63/50000$. The all-length theorem and its construction compile with
+\texttt{propext}, \texttt{Classical.choice}, and \texttt{Quot.sound}.
+Local comparison against the official Big O Speedrun target confirms the
+same theorem statement and all 1,999 statement dependencies.
+
+The three Python checkers verify finite provider identities, bridge geometry
+and rational contraction inequalities. The Lean proof connects these parts
+to the charged tensor algorithm and full Fourier reduction. Reproduction
+instructions and fixed source versions are supplied with the repository.
+
+The bound is asymptotic in the specified unrestricted exact-arithmetic model.
+Its constants include the finite class stock and schedule tables.
+
+\paragraph{Public-record update, October 17.}
+A submission-preparation refresh located the author's October 17,
+00:23 UTC correction in verifier PR~10, changing the mixed-package claim to $123316855/100000000000$ and explicitly
+withdrew the larger $20099/16000000$ headline as unsupported by that package.
+That correction predates, but was not reflected in, the frozen source
+inspection above. The corrected saving is also below $63/50000$. The submission was closed
+without an external pass for the corrected revision. See the linked public
+record in \texttt{COMPARISON.md}. This update changes the comparison status,
+not the construction or proof in this note.
+
+\bibliographystyle{amsplain}
+\bibliography{references}
+\end{document}

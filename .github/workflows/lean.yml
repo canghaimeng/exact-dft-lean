@@ -1,0 +1,39 @@
+name: Lean
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      LEAN_NUM_THREADS: 1
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: leanprover/lean-action@24581d74d674803a25a81b10b059c5c0cdd344c6
+        with:
+          build: "true"
+          test: "false"
+          lint: "false"
+          use-mathlib-cache: "true"
+      - name: Check target and permitted axioms
+        shell: bash
+        run: |
+          set -euo pipefail
+          lake env lean Check.lean | tee /tmp/exact-dft-axioms.txt
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          text = Path('/tmp/exact-dft-axioms.txt').read_text()
+          match = re.search(r"'Race\.bound' depends on axioms: \[([^\]]*)\]", text)
+          assert match, 'Missing target axiom report'
+          assert {x.strip() for x in match[1].split(',')} == {'propext', 'Classical.choice', 'Quot.sound'}
+          assert 'sorryAx' not in text
+          PY
